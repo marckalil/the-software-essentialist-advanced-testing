@@ -1,6 +1,6 @@
 import { Database } from "../../shared/database";
 import { WebServer } from "../../shared/http/webServer";
-import { TransactionalEmailAPI } from "../marketing/transactionalEmailAPI";
+import { TransactionalEmailAPI } from "../notifications/ports/transactionalEmailAPI";
 import { ProductionUsersRepository } from "./adapters/productionUsersRepository";
 import { UsersRepository } from "./ports/usersRepository";
 import { UsersController } from "./usersController";

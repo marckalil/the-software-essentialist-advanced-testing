@@ -9,7 +9,7 @@ import {
 } from "./usersExceptions";
 import { UsersRepository } from "./ports/usersRepository";
 
-import { TransactionalEmailAPI } from "../marketing/transactionalEmailAPI";
+import { TransactionalEmailAPI } from "../notifications/ports/transactionalEmailAPI";
 
 export class UsersService {
   constructor(
@@ -39,7 +39,7 @@ export class UsersService {
 
     const user = await this.repository.save(validatedUser);
 
-    await this.emailAPI.sendMail({
+    await this.emailAPI.sendEmail({
       to: user.email,
       subject: "Your login details to DDDForum",
       text: `Welcome to DDDForum. You can login with the following details </br>

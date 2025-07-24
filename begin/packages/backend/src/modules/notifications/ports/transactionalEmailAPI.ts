@@ -1,3 +1,7 @@
 export interface TransactionalEmailAPI {
-  sendEmail(to: string, subject: string, body: string): Promise<void>;
+  sendEmail(email: {
+    to: string;
+    subject: string;
+    text: string;
+  }): Promise<void>;
 }
