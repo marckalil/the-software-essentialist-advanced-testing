@@ -1,4 +1,5 @@
-import { TransactionalEmailAPI } from "./transactionalEmailAPI";
+import { MailJetTransactionalEmailAPI } from "./adapters/transactionalEmailAPI/mailJetTransactionalEmailAPI";
+import { TransactionalEmailAPI } from "./ports/transactionalEmailAPI";
 
 export class NotificationsModule {
   private transactionalEmailAPI: TransactionalEmailAPI;
@@ -16,6 +17,6 @@ export class NotificationsModule {
   }
 
   private createTransactionalEmailAPI() {
-    return new TransactionalEmailAPI();
+    return new MailJetTransactionalEmailAPI();
   }
 }
