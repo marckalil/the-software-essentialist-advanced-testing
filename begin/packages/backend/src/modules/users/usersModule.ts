@@ -1,11 +1,14 @@
-import { UsersController } from "./usersController";
 import { Database } from "../../shared/database";
-import { TransactionalEmailAPI } from "../notifications/transactionalEmailAPI";
 import { WebServer } from "../../shared/http/webServer";
-import { UsersService } from "./usersService";
+import { TransactionalEmailAPI } from "../marketing/transactionalEmailAPI";
+import { ProductionUsersRepository } from "./adapters/productionUsersRepository";
+import { UsersRepository } from "./ports/usersRepository";
+import { UsersController } from "./usersController";
 import { userErrorHandler } from "./usersErrors";
+import { UsersService } from "./usersService";
 
 export class UsersModule {
+  private usersRepository: UsersRepository;
   private usersService: UsersService;
   private usersController: UsersController;
 
@@ -13,6 +16,7 @@ export class UsersModule {
     private dbConnection: Database,
     private emailAPI: TransactionalEmailAPI,
   ) {
+    this.usersRepository = this.createUsersRepository();
     this.usersService = this.createUsersService();
     this.usersController = this.createUsersController();
   }
@@ -21,8 +25,13 @@ export class UsersModule {
     return new UsersModule(dbConnection, emailAPI);
   }
 
+  private createUsersRepository() {
+    if (this.usersRepository) return this.usersRepository;
+    return new ProductionUsersRepository(this.dbConnection.getConnection());
+  }
+
   private createUsersService() {
-    return new UsersService(this.dbConnection, this.emailAPI);
+    return new UsersService(this.usersRepository, this.emailAPI);
   }
 
   private createUsersController() {

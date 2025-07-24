@@ -1,8 +1,6 @@
 import { User, ValidatedUser } from "@dddforum/shared/src/api/users";
 import { TextUtil } from "@dddforum/shared/src/utils/textUtils";
 
-import { TransactionalEmailAPI } from "../notifications/transactionalEmailAPI";
-
 import { CreateUserCommand } from "./usersCommand";
 import {
   EmailAlreadyInUseException,
@@ -10,6 +8,8 @@ import {
   UsernameAlreadyTakenException,
 } from "./usersExceptions";
 import { UsersRepository } from "./ports/usersRepository";
+
+import { TransactionalEmailAPI } from "../marketing/transactionalEmailAPI";
 
 export class UsersService {
   constructor(
