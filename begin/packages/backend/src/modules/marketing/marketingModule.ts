@@ -1,8 +1,9 @@
 import { WebServer } from "../../shared/http/webServer";
-import { ContactListAPI } from "./contactListAPI";
+import { ContactListAPI } from "./ports/contactListAPI";
 import { MarketingController } from "./marketingController";
 import { marketingErrorHandler } from "./marketingErrors";
 import { MarketingService } from "./marketingService";
+import { MailChimpContactList } from "./adapters/contactListApi/mailChimpContactList";
 
 export class MarketingModule {
   private marketingService: MarketingService;
@@ -31,7 +32,7 @@ export class MarketingModule {
   }
 
   private buildContactListAPI() {
-    return new ContactListAPI();
+    return new MailChimpContactList();
   }
 
   public getMarketingController() {
