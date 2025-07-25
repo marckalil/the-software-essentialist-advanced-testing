@@ -38,6 +38,14 @@ export class PostsModule {
     return this.postsController;
   }
 
+  public getPostsService() {
+    return this.postsService;
+  }
+
+  public getPostsRepository() {
+    return this.postsRepository;
+  }
+
   public mountRouter(webServer: WebServer) {
     webServer.mountRouter("/posts", this.postsController.getRouter());
   }

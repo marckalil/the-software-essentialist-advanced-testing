@@ -15,4 +15,12 @@ export class Config {
     this.env = (process.env.NODE_ENV as Environment) || "development";
     this.script = script;
   }
+
+  getEnvironment(): Environment {
+    return this.env;
+  }
+
+  getScript(): Script {
+    return this.script;
+  }
 }
