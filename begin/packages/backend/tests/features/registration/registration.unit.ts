@@ -74,19 +74,40 @@ defineFeature(feature, (test) => {
     });
   });
 
-  test.skip("Successful registration without marketing emails accepted", ({
+  test("Successful registration without marketing emails accepted", ({
     given,
     when,
     then,
     and,
   }) => {
-    given("I am a new user", () => {});
+    given("I am a new user", () => {
+      const createUserInput = new CreateUserBuilder()
+        .withAllRandomDetails()
+        .build();
+      createUserCommand = new CreateUserCommand(createUserInput);
+    });
     when(
       "I register with valid account details declining marketing emails",
-      () => {},
+      async () => {
+        createUserResponse =
+          await application.users.createUser(createUserCommand);
+      },
     );
-    then("I should be granted access to my account", () => {});
-    and("I should not expect to receive marketing emails", () => {});
+    then("I should be granted access to my account", async () => {
+      expect(createUserResponse.id).toBeDefined();
+      expect(createUserResponse.email).toEqual(createUserCommand.email);
+      expect(createUserResponse.firstName).toEqual(createUserCommand.firstName);
+      expect(createUserResponse.lastName).toEqual(createUserCommand.lastName);
+      expect(createUserResponse.username).toEqual(createUserCommand.username);
+
+      const getUserByEmailResponse = await application.users.getUserByEmail(
+        createUserCommand.email,
+      );
+      expect(getUserByEmailResponse.email).toEqual(createUserCommand.email);
+    });
+    and("I should not expect to receive marketing emails", () => {
+      // todo
+    });
   });
 
   test.skip("Invalid or missing registration details", ({
