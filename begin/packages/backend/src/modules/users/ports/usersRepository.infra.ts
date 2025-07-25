@@ -5,6 +5,7 @@ import { CreateUserBuilder } from "@dddforum/shared/tests/support/builders/creat
 import { UsersRepository } from "./usersRepository";
 import { generateRandomPassword } from "../../../shared/utils";
 import { ProductionUsersRepository } from "../adapters/productionUsersRepository";
+import { InMemoryUserRepositorySpy } from "../adapters/inMemoryUserRepositorySpy";
 
 describe("UsersRepository", () => {
   const usersRepositories: [type: string, repository: UsersRepository][] = [
@@ -12,6 +13,7 @@ describe("UsersRepository", () => {
       "Production UsersRepository",
       new ProductionUsersRepository(new PrismaClient()),
     ],
+    ["InMemory UsersRepository", new InMemoryUserRepositorySpy()],
   ];
 
   describe.each(usersRepositories)("%s", (_, repository) => {
