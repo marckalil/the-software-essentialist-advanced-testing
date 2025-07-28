@@ -1,4 +1,7 @@
-import { InvalidRequestBodyException } from "@dddforum/backend/src/shared/exceptions";
+import {
+  InvalidParamsException,
+  InvalidRequestBodyException,
+} from "@dddforum/backend/src/shared/exceptions";
 import { isMissingKeys } from "@dddforum/backend/src/shared/utils/parser";
 import { CreateUserParams } from "@dddforum/shared/src/api/users";
 
@@ -15,6 +18,20 @@ export class CreateUserCommand {
     }
 
     const { username, email, firstName, lastName } = body as CreateUserParams;
+
+    const isEmailValid = email.indexOf("@") !== -1;
+    const isFirstNameValid = firstName !== "";
+    const isLastNameValid = lastName !== "";
+    const isUsernameValid = username !== "";
+
+    if (
+      !isEmailValid ||
+      !isFirstNameValid ||
+      !isLastNameValid ||
+      !isUsernameValid
+    ) {
+      throw new InvalidParamsException();
+    }
 
     return new CreateUserCommand({ email, firstName, lastName, username });
   }

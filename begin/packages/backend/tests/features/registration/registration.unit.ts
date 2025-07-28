@@ -2,7 +2,7 @@ import { defineFeature, loadFeature } from "jest-cucumber";
 import * as path from "path";
 import { sharedTestRoot } from "@dddforum/shared/src/paths";
 import { Application } from "@dddforum/backend/src/shared/application";
-import { User } from "@dddforum/shared/src/api/users";
+import { CreateUserParams, User } from "@dddforum/shared/src/api/users";
 import { CreateUserCommand } from "@dddforum/backend/src/modules/users/usersCommand";
 import { CompositionRoot } from "@dddforum/backend/src/shared/compositionRoot";
 import { Config } from "@dddforum/backend/src/shared/config";
@@ -20,9 +20,10 @@ defineFeature(feature, (test) => {
   let compositionRoot: CompositionRoot;
   let createUserCommand: CreateUserCommand;
   let createUserResponse: User;
+  let createUserInput: CreateUserParams;
   let fakeRepository: InMemoryUserRepositorySpy;
 
-  beforeAll(() => {
+  beforeAll(async () => {
     const config = new Config("test:unit");
     compositionRoot = CompositionRoot.createCompositionRoot(config);
     application = compositionRoot.getApplication();
@@ -30,7 +31,7 @@ defineFeature(feature, (test) => {
       .users as InMemoryUserRepositorySpy;
   });
 
-  afterEach(async () => {
+  beforeEach(async () => {
     await fakeRepository.reset();
     addEmailToListResponse = undefined;
   });
@@ -45,7 +46,7 @@ defineFeature(feature, (test) => {
       const createUserInput = new CreateUserBuilder()
         .withAllRandomDetails()
         .build();
-      createUserCommand = new CreateUserCommand(createUserInput);
+      createUserCommand = CreateUserCommand.fromRequest(createUserInput);
     });
     when(
       "I register with valid account details accepting marketing emails",
@@ -84,7 +85,7 @@ defineFeature(feature, (test) => {
       const createUserInput = new CreateUserBuilder()
         .withAllRandomDetails()
         .build();
-      createUserCommand = new CreateUserCommand(createUserInput);
+      createUserCommand = CreateUserCommand.fromRequest(createUserInput);
     });
     when(
       "I register with valid account details declining marketing emails",
@@ -110,33 +111,78 @@ defineFeature(feature, (test) => {
     });
   });
 
-  test.skip("Invalid or missing registration details", ({
+  test("Invalid or missing registration details", ({
     given,
     when,
     then,
     and,
   }) => {
-    given("I am a new user", () => {});
-    when("I register with invalid account details", () => {});
-    then(
-      "I should see an error notifying me that my input is invalid",
-      () => {},
-    );
-    and("I should not have been sent access to account details", () => {});
+    let error: any;
+    given("I am a new user", () => {
+      createUserInput = new CreateUserBuilder()
+        .withAllRandomDetails()
+        .withEmail("")
+        .build();
+    });
+    when("I register with invalid account details", async () => {
+      try {
+        createUserCommand = CreateUserCommand.fromRequest(createUserInput);
+        await application.users.createUser(createUserCommand);
+      } catch (e) {
+        error = e;
+      }
+    });
+    then("I should see an error notifying me that my input is invalid", () => {
+      expect(error).toBeDefined();
+    });
+    and("I should not have been sent access to account details", () => {
+      // todo
+    });
   });
 
-  test.skip("Account already created with email", ({
-    given,
-    when,
-    then,
-    and,
-  }) => {
-    given("a set of users already created accounts", (table) => {});
-    when("new users attempt to register with those emails", () => {});
+  test("Account already created with email", ({ given, when, then, and }) => {
+    const inputs: CreateUserParams[] = [];
+    const createUserErrors: any[] = [];
+
+    given("a set of users already created accounts", async (table) => {
+      for (const row of table) {
+        const createUserInput = new CreateUserBuilder()
+          .withAllRandomDetails()
+          .withEmail(row.email)
+          .withFirstName(row.firstName)
+          .withLastName(row.lastName)
+          .build();
+        inputs.push(createUserInput);
+        const createUserCommand =
+          CreateUserCommand.fromRequest(createUserInput);
+        await application.users.createUser(createUserCommand);
+      }
+    });
+    when("new users attempt to register with those emails", async () => {
+      for (const input of inputs) {
+        try {
+          const createUserCommand = CreateUserCommand.fromRequest(input);
+          await application.users.createUser(createUserCommand);
+        } catch (error) {
+          createUserErrors.push(error);
+        }
+      }
+    });
     then(
       "they should see an error notifying them that the account already exists",
-      () => {},
+      async () => {
+        expect(createUserErrors).toHaveLength(inputs.length);
+        for (const error of createUserErrors) {
+          expect(error).toEqual(
+            expect.objectContaining({
+              type: "EmailAlreadyInUseException",
+            }),
+          );
+        }
+      },
     );
-    and("they should not have been sent access to account details", () => {});
+    and("they should not have been sent access to account details", () => {
+      // todo
+    });
   });
 });

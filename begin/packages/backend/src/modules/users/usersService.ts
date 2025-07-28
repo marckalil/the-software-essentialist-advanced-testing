@@ -18,18 +18,16 @@ export class UsersService {
   ) {}
 
   async createUser(userData: CreateUserCommand): Promise<User> {
-    const existingUserByEmail = await this.repository.findByEmail(
-      userData.email,
-    );
+    const { email, username } = userData.props;
+    const existingUserByEmail = await this.repository.findByEmail(email);
     if (existingUserByEmail) {
-      throw new EmailAlreadyInUseException(userData.email);
+      throw new EmailAlreadyInUseException(email);
     }
 
-    const existingUserByUsername = await this.repository.findByUsername(
-      userData.username,
-    );
+    const existingUserByUsername =
+      await this.repository.findByUsername(username);
     if (existingUserByUsername) {
-      throw new UsernameAlreadyTakenException(userData.username);
+      throw new UsernameAlreadyTakenException(username);
     }
 
     const validatedUser: ValidatedUser = {
