@@ -8,8 +8,8 @@ export type Script =
   | "test:infra";
 
 export class Config {
-  env: Environment;
-  script: Script;
+  private env: Environment;
+  private script: Script;
 
   constructor(script: Script) {
     this.env = (process.env.NODE_ENV as Environment) || "development";

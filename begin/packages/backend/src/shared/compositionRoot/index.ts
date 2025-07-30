@@ -64,7 +64,7 @@ export class CompositionRoot {
   }
 
   createWebServer() {
-    return new WebServer({ port: 3000, env: this.config.env });
+    return new WebServer({ port: 3000, env: this.config.getEnvironment() });
   }
 
   getWebServer() {
