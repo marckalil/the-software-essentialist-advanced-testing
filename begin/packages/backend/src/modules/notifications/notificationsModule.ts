@@ -1,15 +1,19 @@
+import { Config } from "../../shared/config";
+import { ApplicationModule } from "../../shared/modules/applicationModule";
 import { MailJetTransactionalEmailAPI } from "./adapters/transactionalEmailAPI/mailJetTransactionalEmailAPI";
+import { TransactionalEmailAPISpy } from "./adapters/transactionalEmailAPI/transactionalEmailAPISpy";
 import { TransactionalEmailAPI } from "./ports/transactionalEmailAPI";
 
-export class NotificationsModule {
+export class NotificationsModule extends ApplicationModule {
   private transactionalEmailAPI: TransactionalEmailAPI;
 
-  private constructor() {
+  private constructor(config: Config) {
+    super(config);
     this.transactionalEmailAPI = this.createTransactionalEmailAPI();
   }
 
-  static build() {
-    return new NotificationsModule();
+  static build(config: Config) {
+    return new NotificationsModule(config);
   }
 
   public getTransactionalEmailAPI() {
@@ -17,6 +21,8 @@ export class NotificationsModule {
   }
 
   private createTransactionalEmailAPI() {
+    if (this.transactionalEmailAPI) return this.transactionalEmailAPI;
+    if (this.shouldBuildFakeRepository) return new TransactionalEmailAPISpy();
     return new MailJetTransactionalEmailAPI();
   }
 }

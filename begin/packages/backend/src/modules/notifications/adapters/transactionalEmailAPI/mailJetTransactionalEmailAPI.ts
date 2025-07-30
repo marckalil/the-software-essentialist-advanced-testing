@@ -5,10 +5,11 @@ export class MailJetTransactionalEmailAPI implements TransactionalEmailAPI {
     to: string;
     subject: string;
     text: string;
-  }): Promise<void> {
+  }): Promise<boolean> {
     const { to, subject, text } = email;
     console.log(
       `MailJet: Sending email to ${to} with subject ${subject} and text ${text}`,
     );
+    return true;
   }
 }

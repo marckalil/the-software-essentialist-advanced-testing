@@ -8,6 +8,9 @@ import { CompositionRoot } from "@dddforum/backend/src/shared/compositionRoot";
 import { Config } from "@dddforum/backend/src/shared/config";
 import { InMemoryUserRepositorySpy } from "@dddforum/backend/src/modules/users/adapters/inMemoryUserRepositorySpy";
 import { CreateUserBuilder } from "@dddforum/shared/tests/support/builders/createUserBuilder";
+import { TransactionalEmailAPISpy } from "@dddforum/backend/src/modules/notifications/adapters/transactionalEmailAPI/transactionalEmailAPISpy";
+import { ContactListAPISpy } from "@dddforum/backend/src/modules/marketing/adapters/contactListApi/contactListAPISpy";
+import exp from "constants";
 
 const feature = loadFeature(
   path.join(sharedTestRoot, "features/registration.feature"),
@@ -22,6 +25,8 @@ defineFeature(feature, (test) => {
   let createUserResponse: User;
   let createUserInput: CreateUserParams;
   let usersRepository: InMemoryUserRepositorySpy;
+  let contactListAPI: ContactListAPISpy;
+  let transactionalEmailAPI: TransactionalEmailAPISpy;
 
   beforeAll(async () => {
     const config = new Config("test:unit");
@@ -29,10 +34,15 @@ defineFeature(feature, (test) => {
     application = compositionRoot.getApplication();
     usersRepository = compositionRoot.getRepositories()
       .users as InMemoryUserRepositorySpy;
+    contactListAPI = compositionRoot.getContactListAPI() as ContactListAPISpy;
+    transactionalEmailAPI =
+      compositionRoot.getTransactionalEmailAPI() as TransactionalEmailAPISpy;
   });
 
   beforeEach(async () => {
     await usersRepository.reset();
+    contactListAPI.reset();
+    transactionalEmailAPI.reset();
     addEmailToListResponse = undefined;
   });
 
@@ -74,9 +84,13 @@ defineFeature(feature, (test) => {
 
       // Communication verification
       expect(usersRepository.getTimesMethodCalled("save")).toEqual(1);
+      expect(transactionalEmailAPI.getTimesMethodCalled("sendEmail")).toEqual(
+        1,
+      );
     });
     and("I should expect to receive marketing emails", () => {
-      // todo
+      expect(addEmailToListResponse).toBeTruthy();
+      expect(contactListAPI.getTimesMethodCalled("addEmailToList")).toEqual(1);
     });
   });
 
@@ -112,9 +126,13 @@ defineFeature(feature, (test) => {
       expect(getUserByEmailResponse.email).toEqual(createUserCommand.email);
 
       expect(usersRepository.getTimesMethodCalled("save")).toEqual(1);
+      expect(transactionalEmailAPI.getTimesMethodCalled("sendEmail")).toEqual(
+        1,
+      );
     });
     and("I should not expect to receive marketing emails", () => {
-      // todo
+      expect(addEmailToListResponse).toBeFalsy();
+      expect(contactListAPI.getTimesMethodCalled("addEmailToList")).toEqual(0);
     });
   });
 
@@ -144,7 +162,10 @@ defineFeature(feature, (test) => {
       expect(error).toBeDefined();
     });
     and("I should not have been sent access to account details", () => {
-      // todo
+      expect(transactionalEmailAPI.getTimesMethodCalled("sendEmail")).toEqual(
+        0,
+      );
+      expect(contactListAPI.getTimesMethodCalled("addEmailToList")).toEqual(0);
     });
   });
 
@@ -164,6 +185,7 @@ defineFeature(feature, (test) => {
         const createUserCommand =
           CreateUserCommand.fromRequest(createUserInput);
         await application.users.createUser(createUserCommand);
+        transactionalEmailAPI.reset();
       }
     });
     when("new users attempt to register with those emails", async () => {
@@ -190,7 +212,10 @@ defineFeature(feature, (test) => {
       },
     );
     and("they should not have been sent access to account details", () => {
-      // todo
+      expect(transactionalEmailAPI.getTimesMethodCalled("sendEmail")).toEqual(
+        0,
+      );
+      expect(contactListAPI.getTimesMethodCalled("addEmailToList")).toEqual(0);
     });
   });
 });

@@ -4,20 +4,24 @@ import { MarketingController } from "./marketingController";
 import { marketingErrorHandler } from "./marketingErrors";
 import { MarketingService } from "./marketingService";
 import { MailChimpContactList } from "./adapters/contactListApi/mailChimpContactList";
+import { Config } from "../../shared/config";
+import { ApplicationModule } from "../../shared/modules/applicationModule";
+import { ContactListAPISpy } from "./adapters/contactListApi/contactListAPISpy";
 
-export class MarketingModule {
+export class MarketingModule extends ApplicationModule {
   private marketingService: MarketingService;
   private marketingController: MarketingController;
   private contactListAPI: ContactListAPI;
 
-  private constructor() {
+  private constructor(config: Config) {
+    super(config);
     this.contactListAPI = this.buildContactListAPI();
     this.marketingService = this.createMarketingService();
     this.marketingController = this.createMarketingController();
   }
 
-  static build() {
-    return new MarketingModule();
+  static build(config: Config) {
+    return new MarketingModule(config);
   }
 
   private createMarketingService() {
@@ -32,6 +36,8 @@ export class MarketingModule {
   }
 
   private buildContactListAPI() {
+    if (this.contactListAPI) return this.contactListAPI;
+    if (this.shouldBuildFakeRepository) return new ContactListAPISpy();
     return new MailChimpContactList();
   }
 
@@ -41,6 +47,10 @@ export class MarketingModule {
 
   public getMarketingService() {
     return this.marketingService;
+  }
+
+  public getContactListAPI() {
+    return this.contactListAPI;
   }
 
   public mountRouter(webServer: WebServer) {

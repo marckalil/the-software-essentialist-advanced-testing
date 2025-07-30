@@ -39,11 +39,11 @@ export class CompositionRoot {
   }
 
   createNotificationsModule() {
-    return NotificationsModule.build();
+    return NotificationsModule.build(this.config);
   }
 
   createMarketingModule() {
-    return MarketingModule.build();
+    return MarketingModule.build(this.config);
   }
 
   createUsersModule() {
@@ -98,5 +98,13 @@ export class CompositionRoot {
       users: this.usersModule.getUsersRepository(),
       posts: this.postsModule.getPostsRepository(),
     };
+  }
+
+  getTransactionalEmailAPI() {
+    return this.notificationsModule.getTransactionalEmailAPI();
+  }
+
+  getContactListAPI() {
+    return this.marketingModule.getContactListAPI();
   }
 }
