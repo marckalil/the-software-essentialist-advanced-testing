@@ -9,7 +9,7 @@ import { Config } from "@dddforum/backend/src/shared/config";
 import { CreateUserBuilder } from "@dddforum/shared/tests/support/builders/createUserBuilder";
 import { TransactionalEmailAPISpy } from "@dddforum/backend/src/modules/notifications/adapters/transactionalEmailAPI/transactionalEmailAPISpy";
 import { ContactListAPISpy } from "@dddforum/backend/src/modules/marketing/adapters/contactListApi/contactListAPISpy";
-import { ProductionUsersRepository } from "@dddforum/backend/src/modules/users/adapters/productionUsersRepository";
+import { DatabaseFixture } from "@dddforum/shared/tests/support/fixtures/databaseFixture";
 
 const feature = loadFeature(
   path.join(sharedTestRoot, "features/registration.feature"),
@@ -23,22 +23,22 @@ defineFeature(feature, (test) => {
   let createUserCommand: CreateUserCommand;
   let createUserResponse: User;
   let createUserInput: CreateUserParams;
-  let usersRepository: ProductionUsersRepository;
   let contactListAPI: ContactListAPISpy;
   let transactionalEmailAPI: TransactionalEmailAPISpy;
+  let databaseFixture: DatabaseFixture;
 
   beforeAll(async () => {
     const config = new Config("test:infra");
     compositionRoot = CompositionRoot.createCompositionRoot(config);
+    databaseFixture = new DatabaseFixture(compositionRoot.getDBConnection());
     application = compositionRoot.getApplication();
-    usersRepository = compositionRoot.getRepositories()
-      .users as ProductionUsersRepository;
     contactListAPI = compositionRoot.getContactListAPI() as ContactListAPISpy;
     transactionalEmailAPI =
       compositionRoot.getTransactionalEmailAPI() as TransactionalEmailAPISpy;
   });
 
   beforeEach(async () => {
+    await databaseFixture.resetDatabase();
     contactListAPI.reset();
     transactionalEmailAPI.reset();
     addEmailToListResponse = undefined;
