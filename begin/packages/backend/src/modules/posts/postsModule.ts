@@ -5,24 +5,32 @@ import { PostsController } from "./postsController";
 import { postsErrorHandler } from "./postsErrors";
 import { PostsService } from "./postsService";
 import { PostsRepository } from "./ports/postsRepository";
+import { ApplicationModule } from "../../shared/modules/applicationModule";
+import { Config } from "../../shared/config";
+import { InMemoryPostsRepositorySpy } from "./adapters/inMemoryPostsRepository";
 
-export class PostsModule {
+export class PostsModule extends ApplicationModule {
   private postsRepository: PostsRepository;
   private postsService: PostsService;
   private postsController: PostsController;
 
-  private constructor(private dbConnection: Database) {
+  private constructor(
+    private dbConnection: Database,
+    config: Config,
+  ) {
+    super(config);
     this.postsRepository = this.createPostsRepository();
     this.postsService = this.createPostsService();
     this.postsController = this.createPostsController();
   }
 
-  static build(dbConnection: Database) {
-    return new PostsModule(dbConnection);
+  static build(dbConnection: Database, config: Config) {
+    return new PostsModule(dbConnection, config);
   }
 
   private createPostsRepository() {
     if (this.postsRepository) return this.postsRepository;
+    if (this.shouldBuildFakeRepository) return new InMemoryPostsRepositorySpy();
     return new ProductionPostsRepository(this.dbConnection.getConnection());
   }
 
