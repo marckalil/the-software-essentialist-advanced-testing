@@ -22,7 +22,8 @@ export class NotificationsModule extends ApplicationModule {
 
   private createTransactionalEmailAPI() {
     if (this.transactionalEmailAPI) return this.transactionalEmailAPI;
-    if (this.shouldBuildFakeRepository) return new TransactionalEmailAPISpy();
-    return new MailJetTransactionalEmailAPI();
+    if (this.getEnvironment() === "production")
+      return new MailJetTransactionalEmailAPI();
+    return new TransactionalEmailAPISpy();
   }
 }

@@ -37,8 +37,9 @@ export class MarketingModule extends ApplicationModule {
 
   private buildContactListAPI() {
     if (this.contactListAPI) return this.contactListAPI;
-    if (this.shouldBuildFakeRepository) return new ContactListAPISpy();
-    return new MailChimpContactList();
+    if (this.getEnvironment() === "production")
+      return new MailChimpContactList();
+    return new ContactListAPISpy();
   }
 
   public getMarketingController() {
