@@ -10,7 +10,6 @@ import { InMemoryUserRepositorySpy } from "@dddforum/backend/src/modules/users/a
 import { CreateUserBuilder } from "@dddforum/shared/tests/support/builders/createUserBuilder";
 import { TransactionalEmailAPISpy } from "@dddforum/backend/src/modules/notifications/adapters/transactionalEmailAPI/transactionalEmailAPISpy";
 import { ContactListAPISpy } from "@dddforum/backend/src/modules/marketing/adapters/contactListApi/contactListAPISpy";
-import exp from "constants";
 
 const feature = loadFeature(
   path.join(sharedTestRoot, "features/registration.feature"),
