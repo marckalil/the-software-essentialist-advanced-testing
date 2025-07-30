@@ -1,14 +1,20 @@
 import { User } from "@prisma/client";
 import { UsersRepository } from "../ports/usersRepository";
 import { CreateUserCommand } from "../usersCommand";
+import { Spy } from "../../../shared/testDoubles/spy";
 
-export class InMemoryUserRepositorySpy implements UsersRepository {
+export class InMemoryUserRepositorySpy
+  extends Spy<UsersRepository>
+  implements UsersRepository
+{
   private users: User[];
 
   constructor() {
+    super();
     this.users = [];
   }
   async save(user: User): Promise<User> {
+    this.addCall("save", [user]);
     const newUser = {
       ...user,
       id: this.users.length > 0 ? this.users[this.users.length - 1].id + 1 : 1,
@@ -55,6 +61,7 @@ export class InMemoryUserRepositorySpy implements UsersRepository {
   }
 
   async reset(): Promise<void> {
+    this.resetSpiedCalls();
     this.users = [];
     return Promise.resolve();
   }

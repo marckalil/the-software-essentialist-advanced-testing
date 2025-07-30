@@ -59,16 +59,21 @@ defineFeature(feature, (test) => {
       },
     );
     then("I should be granted access to my account", async () => {
+      // Result verification
       expect(createUserResponse.id).toBeDefined();
       expect(createUserResponse.email).toEqual(createUserCommand.email);
       expect(createUserResponse.firstName).toEqual(createUserCommand.firstName);
       expect(createUserResponse.lastName).toEqual(createUserCommand.lastName);
       expect(createUserResponse.username).toEqual(createUserCommand.username);
 
+      // State verification
       const getUserByEmailResponse = await application.users.getUserByEmail(
         createUserCommand.email,
       );
       expect(getUserByEmailResponse.email).toEqual(createUserCommand.email);
+
+      // Communication verification
+      expect(fakeRepository.getTimesMethodCalled("save")).toEqual(1);
     });
     and("I should expect to receive marketing emails", () => {
       // todo
@@ -105,6 +110,8 @@ defineFeature(feature, (test) => {
         createUserCommand.email,
       );
       expect(getUserByEmailResponse.email).toEqual(createUserCommand.email);
+
+      expect(fakeRepository.getTimesMethodCalled("save")).toEqual(1);
     });
     and("I should not expect to receive marketing emails", () => {
       // todo
@@ -133,6 +140,7 @@ defineFeature(feature, (test) => {
       }
     });
     then("I should see an error notifying me that my input is invalid", () => {
+      expect(fakeRepository.getTimesMethodCalled("save")).toEqual(0);
       expect(error).toBeDefined();
     });
     and("I should not have been sent access to account details", () => {
