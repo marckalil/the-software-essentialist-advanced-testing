@@ -21,18 +21,18 @@ defineFeature(feature, (test) => {
   let createUserCommand: CreateUserCommand;
   let createUserResponse: User;
   let createUserInput: CreateUserParams;
-  let fakeRepository: InMemoryUserRepositorySpy;
+  let usersRepository: InMemoryUserRepositorySpy;
 
   beforeAll(async () => {
     const config = new Config("test:unit");
     compositionRoot = CompositionRoot.createCompositionRoot(config);
     application = compositionRoot.getApplication();
-    fakeRepository = compositionRoot.getRepositories()
+    usersRepository = compositionRoot.getRepositories()
       .users as InMemoryUserRepositorySpy;
   });
 
   beforeEach(async () => {
-    await fakeRepository.reset();
+    await usersRepository.reset();
     addEmailToListResponse = undefined;
   });
 
@@ -73,7 +73,7 @@ defineFeature(feature, (test) => {
       expect(getUserByEmailResponse.email).toEqual(createUserCommand.email);
 
       // Communication verification
-      expect(fakeRepository.getTimesMethodCalled("save")).toEqual(1);
+      expect(usersRepository.getTimesMethodCalled("save")).toEqual(1);
     });
     and("I should expect to receive marketing emails", () => {
       // todo
@@ -111,7 +111,7 @@ defineFeature(feature, (test) => {
       );
       expect(getUserByEmailResponse.email).toEqual(createUserCommand.email);
 
-      expect(fakeRepository.getTimesMethodCalled("save")).toEqual(1);
+      expect(usersRepository.getTimesMethodCalled("save")).toEqual(1);
     });
     and("I should not expect to receive marketing emails", () => {
       // todo
@@ -140,7 +140,7 @@ defineFeature(feature, (test) => {
       }
     });
     then("I should see an error notifying me that my input is invalid", () => {
-      expect(fakeRepository.getTimesMethodCalled("save")).toEqual(0);
+      expect(usersRepository.getTimesMethodCalled("save")).toEqual(0);
       expect(error).toBeDefined();
     });
     and("I should not have been sent access to account details", () => {
