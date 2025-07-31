@@ -5,8 +5,8 @@ import { Database } from "@dddforum/backend/src/shared/database";
 
 export class DatabaseFixture {
   private connection: PrismaClient;
-  constructor() {
-    this.connection = new Database().getConnection();
+  constructor(dbConnection: Database) {
+    this.connection = dbConnection.getConnection();
   }
 
   async resetDatabase() {

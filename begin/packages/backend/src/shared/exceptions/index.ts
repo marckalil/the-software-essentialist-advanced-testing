@@ -33,6 +33,12 @@ class InvalidRequestParamsException extends CustomException {
   }
 }
 
+class InvalidParamsException extends CustomException {
+  constructor() {
+    super("Invalid parameters provided", "InvalidParamsException");
+  }
+}
+
 class ServerErrorException extends CustomException {
   constructor() {
     super("An error occurred", "ServerErrorException");
@@ -40,8 +46,9 @@ class ServerErrorException extends CustomException {
 }
 
 export {
+  InvalidParamsException,
   InvalidRequestBodyException,
-  ServerErrorException,
   InvalidRequestParamsException,
   MissingRequestParamsException,
+  ServerErrorException,
 };

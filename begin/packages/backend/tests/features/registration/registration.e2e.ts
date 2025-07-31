@@ -3,13 +3,16 @@ import { defineFeature, loadFeature } from "jest-cucumber";
 import { sharedTestRoot } from "@dddforum/shared/src/paths";
 import { CreateUserBuilder } from "@dddforum/shared/tests/support/builders/createUserBuilder";
 import { DatabaseFixture } from "@dddforum/shared/tests/support/fixtures/databaseFixture";
-import { CreateUserParams, CreateUserResponse } from "@dddforum/shared/src/api/users";
+import {
+  CreateUserParams,
+  CreateUserResponse,
+} from "@dddforum/shared/src/api/users";
 import { createAPIClient } from "@dddforum/shared/src/api";
 import { CompositionRoot } from "@dddforum/backend/src/shared/compositionRoot";
 import { WebServer } from "@dddforum/backend/src/shared/http/webServer";
 import { Config } from "@dddforum/backend/src/shared/config";
-import { Database } from "../../src/shared/database";
 import { AddEmailToListResponse } from "@dddforum/shared/src/api/marketing";
+import { Database } from "@dddforum/backend/src/shared/database/database";
 
 const feature = loadFeature(
   path.join(sharedTestRoot, "features/registration.feature"),
@@ -17,15 +20,14 @@ const feature = loadFeature(
 
 defineFeature(feature, (test) => {
   let databaseFixture: DatabaseFixture;
-  const apiClient = createAPIClient('http://localhost:3000');
-  let composition: CompositionRoot
-  let server: WebServer
+  const apiClient = createAPIClient("http://localhost:3000");
+  let composition: CompositionRoot;
+  let server: WebServer;
   const config: Config = new Config("test:e2e");
-  let response: CreateUserResponse
+  let response: CreateUserResponse;
   let createUserResponses: CreateUserResponse[] = [];
   let addEmailToListResponse: AddEmailToListResponse;
-  let dbConnection: Database
-  
+  let dbConnection: Database;
 
   beforeAll(async () => {
     composition = CompositionRoot.createCompositionRoot(config);
@@ -39,28 +41,36 @@ defineFeature(feature, (test) => {
 
   afterEach(async () => {
     await databaseFixture.resetDatabase();
-    createUserResponses = []
+    createUserResponses = [];
   });
 
   afterAll(async () => {
     await server.stop();
   });
 
-  test('Successful registration with marketing emails accepted', ({ given, when, then, and }) => {
+  test("Successful registration with marketing emails accepted", ({
+    given,
+    when,
+    then,
+    and,
+  }) => {
     let user: CreateUserParams;
-    
-    given('I am a new user', async () => {
-      user = new CreateUserBuilder()
-        .withAllRandomDetails()
-        .build();
+
+    given("I am a new user", async () => {
+      user = new CreateUserBuilder().withAllRandomDetails().build();
     });
 
-    when('I register with valid account details accepting marketing emails', async () => {
-      response = await apiClient.users.register(user);
-      addEmailToListResponse = await apiClient.marketing.addEmailToList(user.email);
-    });
+    when(
+      "I register with valid account details accepting marketing emails",
+      async () => {
+        response = await apiClient.users.register(user);
+        addEmailToListResponse = await apiClient.marketing.addEmailToList(
+          user.email,
+        );
+      },
+    );
 
-    then('I should be granted access to my account', async () => {
+    then("I should be granted access to my account", async () => {
       const { data, success, error } = response;
 
       // Expect a successful response (Result Verification)
@@ -74,34 +84,41 @@ defineFeature(feature, (test) => {
 
       // And the user exists (State Verification)
       const getUserResponse = await apiClient.users.getUserByEmail(user.email);
-      const {data: getUserData} = getUserResponse;
+      const { data: getUserData } = getUserResponse;
       expect(user.email).toEqual(getUserData!.email);
     });
 
-    and('I should expect to receive marketing emails', () => {
+    and("I should expect to receive marketing emails", () => {
       // How can we test this? what do we want to place under test?
       // Well, what's the tool they'll use? mailchimp?
       // And do we want to expect that mailchimp is going to get called to add
-      // a new contact to a list? Yes, we do. But we're not going to worry 
+      // a new contact to a list? Yes, we do. But we're not going to worry
       // about this yet because we need to learn how to validate this without
-      // filling up a production Mailchimp account with test data. 
-      const { success } = addEmailToListResponse
+      // filling up a production Mailchimp account with test data.
+      const { success } = addEmailToListResponse;
 
       expect(success).toBeTruthy();
     });
   });
 
-  test("Successful registration without marketing emails accepted", ({ given, when, then, and }) => {
+  test("Successful registration without marketing emails accepted", ({
+    given,
+    when,
+    then,
+    and,
+  }) => {
     let user: CreateUserParams;
-    
 
     given("I am a new user", () => {
       user = new CreateUserBuilder().withAllRandomDetails().build();
     });
 
-    when("I register with valid account details declining marketing emails", async () => {
-      response = await apiClient.users.register(user);
-    });
+    when(
+      "I register with valid account details declining marketing emails",
+      async () => {
+        response = await apiClient.users.register(user);
+      },
+    );
 
     then("I should be granted access to my account", () => {
       expect(response.success).toBe(true);
@@ -114,7 +131,7 @@ defineFeature(feature, (test) => {
     });
 
     and("I should not expect to receive marketing emails", () => {
-      const { success } = addEmailToListResponse
+      const { success } = addEmailToListResponse;
 
       expect(success).toBeTruthy();
       // How can we test this? what do we want to place under test?

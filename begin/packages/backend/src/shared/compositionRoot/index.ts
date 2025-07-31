@@ -1,3 +1,4 @@
+import { Application } from "../application";
 import { Config } from "../config";
 import { Database } from "../database";
 import { WebServer } from "../http";
@@ -7,7 +8,6 @@ import {
   NotificationsModule,
   MarketingModule,
 } from "@dddforum/backend/src/modules";
-
 export class CompositionRoot {
   private static instance: CompositionRoot | null = null;
 
@@ -38,23 +38,24 @@ export class CompositionRoot {
     this.mountRoutes();
   }
 
-  createNotificationsModule () {
-    return NotificationsModule.build();
+  createNotificationsModule() {
+    return NotificationsModule.build(this.config);
   }
 
-  createMarketingModule () {
-    return MarketingModule.build();
+  createMarketingModule() {
+    return MarketingModule.build(this.config);
   }
 
-  createUsersModule () {
+  createUsersModule() {
     return UsersModule.build(
       this.dbConnection,
       this.notificationsModule.getTransactionalEmailAPI(),
+      this.config,
     );
   }
 
-  createPostsModule () {
-    return PostsModule.build(this.dbConnection);
+  createPostsModule() {
+    return PostsModule.build(this.dbConnection, this.config);
   }
 
   getDBConnection() {
@@ -63,7 +64,7 @@ export class CompositionRoot {
   }
 
   createWebServer() {
-    return new WebServer({ port: 3000, env: this.config.env });
+    return new WebServer({ port: 3000, env: this.config.getEnvironment() });
   }
 
   getWebServer() {
@@ -82,5 +83,28 @@ export class CompositionRoot {
       this.dbConnection = dbConnection;
     }
     return dbConnection;
+  }
+
+  public getApplication(): Application {
+    return {
+      users: this.usersModule.getUsersService(),
+      posts: this.postsModule.getPostsService(),
+      marketing: this.marketingModule.getMarketingService(),
+    };
+  }
+
+  getRepositories() {
+    return {
+      users: this.usersModule.getUsersRepository(),
+      posts: this.postsModule.getPostsRepository(),
+    };
+  }
+
+  getTransactionalEmailAPI() {
+    return this.notificationsModule.getTransactionalEmailAPI();
+  }
+
+  getContactListAPI() {
+    return this.marketingModule.getContactListAPI();
   }
 }

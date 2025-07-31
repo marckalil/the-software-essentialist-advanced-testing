@@ -1,6 +1,15 @@
 import axios from "axios";
 import { APIResponse, GenericErrors, ServerError } from ".";
 
+export type ValidatedUser = {
+  id?: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  username: string;
+  password: string;
+};
+
 export type CreateUserParams = {
   firstName: string;
   lastName: string;
